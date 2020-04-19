@@ -8,6 +8,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use App\Repository\PostRepository;
 use Psr\Log\LoggerInterface;
+use GuzzleHttp\Client;
+use Wizaplace\SDK\ApiClient;
+use Wizaplace\SDK\Catalog\CatalogService;
 
 class HomeController extends AbstractController
 {
@@ -30,9 +33,23 @@ class HomeController extends AbstractController
             $this->generateUrl('product_full_catalog_page'),
         ];
 
+        // wizaplace api example call
+        $marketplaceApiUri = 'https://sandbox.wizaplace.com/api/v1/'; // replace that value with your own
+        $httpClient = new Client(
+            [
+                'base_uri' => $marketplaceApiUri,
+            ]
+        );
+        $wizaplaceClient = new ApiClient($httpClient);
+        $catalogService = new CatalogService($wizaplaceClient);
+        $userToken = $wizaplaceClient->authenticate('davidmaggi57@gmail.com', 'wizapass');
+        $categories = $catalogService->getCategories();
+
         return [
             'posts' => $posts,
             'routes' => $routes,
+            'token' => $userToken,
+            'categories' => $categories,
         ];
     }
 }
